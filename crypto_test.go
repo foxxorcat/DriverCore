@@ -1,9 +1,10 @@
 package main
 
 import (
-	"DriverCore/common"
-	"DriverCore/crypto"
 	"testing"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/crypto"
 )
 
 func BenchmarkCryptoBlockSize128KIB(b *testing.B) {

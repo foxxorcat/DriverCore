@@ -1,10 +1,11 @@
 package bilibili
 
 import (
-	"DriverCore/common"
-	"DriverCore/encoder"
-	"DriverCore/tools"
 	"fmt"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/encoder"
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 // 格式化链接

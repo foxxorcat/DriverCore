@@ -1,4 +1,4 @@
-module DriverCore
+module github.com/foxxorcat/DriverCore
 
 go 1.17
 

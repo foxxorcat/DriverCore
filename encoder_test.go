@@ -1,10 +1,11 @@
 package main
 
 import (
-	"DriverCore/common"
-	"DriverCore/encoder"
-	"DriverCore/tools"
 	"testing"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/encoder"
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 func BenchmarkEncoder_Encoded(b *testing.B) {

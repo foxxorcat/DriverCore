@@ -1,13 +1,16 @@
 package encoder
 
 import (
-	"DriverCore/tools"
 	"bytes"
 	"encoding/binary"
 	"image"
 	"image/png"
 	"math"
 	"strings"
+
+	"github.com/foxxorcat/DriverCore/common"
+
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 const PNGALPHA = "pngalpha"
@@ -55,7 +58,7 @@ func (*PNGAlpha) Decode(in []byte) ([]byte, error) {
 			j++
 		}
 	default:
-		return nil, ErrImageFormat
+		return nil, common.ErrImageFormat
 	}
 
 	// 验证大小并去除头部
@@ -66,7 +69,7 @@ func (*PNGAlpha) Decode(in []byte) ([]byte, error) {
 	}
 
 	if pixsize < size+4 {
-		return nil, ErrImageCorrupted
+		return nil, common.ErrImageCorrupted
 	}
 
 	return buf[4 : size+4], nil

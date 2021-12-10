@@ -1,13 +1,7 @@
 package crypto
 
 import (
-	"DriverCore/common"
-	"errors"
-)
-
-var (
-	ErrParam         = errors.New("参数错误")
-	ErrNotFindCrypto = errors.New("无法找到加密器")
+	"github.com/foxxorcat/DriverCore/common"
 )
 
 var CryptoList = []string{
@@ -22,6 +16,6 @@ func NewCrypto(name string, param ...string) (common.CryptoPlugin, error) {
 	case CHACHA20:
 		return NewChacha20(param...)
 	default:
-		return nil, ErrNotFindCrypto
+		return nil, common.ErrNotFindCrypto
 	}
 }

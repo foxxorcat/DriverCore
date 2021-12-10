@@ -1,9 +1,10 @@
 package encoder
 
 import (
-	"DriverCore/tools"
 	"math"
 	"strings"
+
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 const BMP2BIT = "bmp2bit"

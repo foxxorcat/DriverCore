@@ -1,15 +1,7 @@
 package encoder
 
 import (
-	"DriverCore/common"
-	"errors"
-)
-
-var (
-	ErrImageCorrupted error = errors.New("图片损坏")
-	ErrImageFormat          = errors.New("图片格式错误")
-	ErrImageDecode          = errors.New("图片解析错误")
-	ErrNotFindEncoder       = errors.New("无法找到编码器")
+	"github.com/foxxorcat/DriverCore/common"
 )
 
 var EncoderList = []string{
@@ -30,6 +22,6 @@ func NewEncoder(name string, param ...string) (common.EncoderPlugin, error) {
 	case NONE:
 		return new(None), nil
 	default:
-		return nil, ErrNotFindEncoder
+		return nil, common.ErrNotFindEncoder
 	}
 }

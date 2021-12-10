@@ -1,12 +1,13 @@
 package bilibili
 
 import (
-	"DriverCore/common"
-	"DriverCore/encoder"
-	"DriverCore/tools"
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/encoder"
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 func (b *BiLiBiLi) Upload(block []byte) (string, error) {

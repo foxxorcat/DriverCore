@@ -3,6 +3,8 @@ package crypto
 import (
 	"crypto/sha1"
 
+	"github.com/foxxorcat/DriverCore/common"
+
 	"github.com/aead/chacha20"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -32,7 +34,7 @@ func (c *Chacha20) Decrypt(in []byte) []byte {
 
 func NewChacha20(param ...string) (*Chacha20, error) {
 	if len(param) < 2 {
-		return nil, ErrParam
+		return nil, common.ErrParam
 	}
 
 	return &Chacha20{

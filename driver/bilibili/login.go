@@ -1,9 +1,10 @@
 package bilibili
 
 import (
-	"DriverCore/common"
-	"DriverCore/tools"
 	"encoding/json"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/tools"
 )
 
 // 是否登陆

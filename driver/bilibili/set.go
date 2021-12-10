@@ -1,12 +1,13 @@
 package bilibili
 
 import (
-	"DriverCore/common"
-	"DriverCore/crypto"
-	"DriverCore/encoder"
 	"context"
 	"sort"
 	"time"
+
+	"github.com/foxxorcat/DriverCore/common"
+	"github.com/foxxorcat/DriverCore/crypto"
+	"github.com/foxxorcat/DriverCore/encoder"
 )
 
 func (b *BiLiBiLi) SetEncoder(name string) (err error) {

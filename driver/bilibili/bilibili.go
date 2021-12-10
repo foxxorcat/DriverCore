@@ -1,8 +1,9 @@
 package bilibili
 
 import (
-	"DriverCore/common"
 	"context"
+
+	"github.com/foxxorcat/DriverCore/common"
 
 	"github.com/go-resty/resty/v2"
 )
