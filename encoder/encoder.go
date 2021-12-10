@@ -1,6 +1,8 @@
 package encoder
 
 import (
+	"sort"
+
 	"github.com/foxxorcat/DriverCore/common"
 )
 
@@ -24,4 +26,8 @@ func NewEncoder(name string, param ...string) (common.EncoderPlugin, error) {
 	default:
 		return nil, common.ErrNotFindEncoder
 	}
+}
+
+func Exist(name string) bool {
+	return sort.SearchStrings(EncoderList, name) > -1
 }
