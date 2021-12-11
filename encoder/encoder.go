@@ -1,33 +1,20 @@
 package encoder
 
 import (
-	"sort"
-
 	"github.com/foxxorcat/DriverCore/common"
+	encoderbmp "github.com/foxxorcat/DriverCore/encoder/bmp"
+	encoderpng "github.com/foxxorcat/DriverCore/encoder/png"
 )
 
-var EncoderList = []string{
-	PNGALPHA,
-	PNGNOTALPHA,
-	BMP2BIT,
-	NONE,
-}
-
-func NewEncoder(name string, param ...string) (common.EncoderPlugin, error) {
+func NewEncoder(name string, param common.EncoderParam) (common.EncoderPlugin, error) {
 	switch name {
-	case PNGALPHA:
-		return new(PNGAlpha), nil
-	case PNGNOTALPHA:
-		return new(PNGNotAlpha), nil
-	case BMP2BIT:
-		return new(BMP2bit), nil
-	case NONE:
+	case encoderpng.Name:
+		return encoderpng.New(param)
+	case encoderbmp.Name:
+		return encoderbmp.New(param)
+	case "none":
 		return new(None), nil
 	default:
 		return nil, common.ErrNotFindEncoder
 	}
-}
-
-func Exist(name string) bool {
-	return sort.SearchStrings(EncoderList, name) > -1
 }

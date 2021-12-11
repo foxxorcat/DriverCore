@@ -1,4 +1,4 @@
-package encoder
+package encoderpng
 
 import (
 	"bytes"
@@ -12,13 +12,7 @@ import (
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
-const PNGNOTALPHA = "pngnotalpha"
-
 type PNGNotAlpha struct{}
-
-func (*PNGNotAlpha) Name() string {
-	return PNGNOTALPHA
-}
 
 // 编码
 func (*PNGNotAlpha) Encoded(in []byte) ([]byte, error) {

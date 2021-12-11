@@ -16,10 +16,6 @@ type Chacha20 struct {
 	nonce []byte
 }
 
-func (c *Chacha20) Name() string {
-	return CHACHA20
-}
-
 func (c *Chacha20) Encrypt(in []byte) []byte {
 	out := make([]byte, len(in))
 	chacha20.XORKeyStream(out, in, c.nonce, c.key)

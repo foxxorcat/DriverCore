@@ -1,4 +1,4 @@
-package encoder
+package encoderbmp
 
 import (
 	"math"
@@ -7,13 +7,7 @@ import (
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
-const BMP2BIT = "bmp2bit"
-
 type BMP2bit struct{}
-
-func (*BMP2bit) Name() string {
-	return BMP2BIT
-}
 
 func (*BMP2bit) Encoded(sile []byte) ([]byte, error) {
 	buf := new(strings.Builder)

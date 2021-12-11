@@ -10,10 +10,11 @@ var (
 )
 
 var (
-	ErrImageCorrupted error = errors.New("图片损坏")
-	ErrImageFormat          = errors.New("图片格式错误")
-	ErrImageDecode          = errors.New("图片解析错误")
-	ErrNotFindEncoder       = errors.New("无法找到编码器")
+	ErrNoSuperMod     = errors.New("不支持当前模式")
+	ErrImageCorrupted = errors.New("图片损坏")
+	ErrImageFormat    = errors.New("图片格式错误")
+	ErrImageDecode    = errors.New("图片解析错误")
+	ErrNotFindEncoder = errors.New("无法找到编码器")
 )
 
 var (

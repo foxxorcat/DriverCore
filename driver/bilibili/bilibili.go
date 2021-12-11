@@ -8,11 +8,12 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const Name = "bilibili"
+var Info common.DriverPluginInfo = new(BiLiBiLi)
 
 type BiLiBiLi struct {
 	client  *resty.Client
 	ctx     context.Context
 	encoder common.EncoderPlugin
+	suffix  string
 	crypto  common.CryptoPlugin
 }

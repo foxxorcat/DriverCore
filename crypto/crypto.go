@@ -1,8 +1,6 @@
 package crypto
 
 import (
-	"sort"
-
 	"github.com/foxxorcat/DriverCore/common"
 )
 
@@ -20,8 +18,4 @@ func NewCrypto(name string, param ...string) (common.CryptoPlugin, error) {
 	default:
 		return nil, common.ErrNotFindCrypto
 	}
-}
-
-func Exist(name string) bool {
-	return sort.SearchStrings(CryptoList, name) > -1
 }

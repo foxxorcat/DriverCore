@@ -40,7 +40,7 @@ type DriverPluginUsable interface {
 	DownloadUsable() bool //是否可以下载
 }
 
-type DriverLoginPlugin interface {
+type DriverPluginLogin interface {
 	IsLogin() bool
 	SetAuthorization(auto string) error // 设置授权
 }

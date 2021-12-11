@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/foxxorcat/DriverCore/common"
-	"github.com/foxxorcat/DriverCore/encoder"
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
@@ -20,15 +19,7 @@ func (b *BiLiBiLi) Upload(block []byte) (string, error) {
 		return "", err
 	}
 
-	var suffix string
-	switch b.encoder.Name() {
-	case encoder.PNGALPHA, encoder.PNGNOTALPHA:
-		suffix = "png"
-	case encoder.BMP2BIT:
-		suffix = "bmp"
-	}
-
-	url := fmt.Sprintf("%s.%s", tools.SHA1Hex(block), suffix)
+	url := fmt.Sprintf("%s.%s", tools.SHA1Hex(block), b.suffix)
 	// 检查是否已经上传
 	if !b.CheckUrl(url) {
 		res, err := b.client.R().

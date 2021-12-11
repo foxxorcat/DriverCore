@@ -2,7 +2,6 @@ package bilibili
 
 import (
 	"context"
-	"sort"
 	"time"
 
 	"github.com/foxxorcat/DriverCore/common"
@@ -11,11 +10,20 @@ import (
 )
 
 func (b *BiLiBiLi) SetEncoder(name string) (err error) {
-	if sort.SearchStrings(b.SuperEncoder(), name) >= 0 {
-		b.encoder, err = encoder.NewEncoder(name, "10")
-		return
+	switch name {
+	case "pngrgb":
+		b.encoder, err = encoder.NewEncoder("png", common.EncoderParam{MinSize: 400, Compress: false, Mod: "rgb"})
+		b.suffix = "png"
+	case "pngrgba":
+		b.encoder, err = encoder.NewEncoder("png", common.EncoderParam{MinSize: 400, Compress: false, Mod: "rgba"})
+		b.suffix = "png"
+	case "bmp2bit":
+		b.encoder, err = encoder.NewEncoder("bmp", common.EncoderParam{MinSize: 400, Mod: "2bit"})
+		b.suffix = "bmp"
+	default:
+		return common.ErrNoSuperEncoder
 	}
-	return common.ErrNoSuperEncoder
+	return err
 }
 
 func (b *BiLiBiLi) SetCrypto(name string, param ...string) (err error) {

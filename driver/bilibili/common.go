@@ -4,17 +4,16 @@ import (
 	"fmt"
 
 	"github.com/foxxorcat/DriverCore/common"
-	"github.com/foxxorcat/DriverCore/encoder"
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
 // 格式化链接
-func (b *BiLiBiLi) formatUrl(sha1 string) string {
-	return fmt.Sprintf("http://i%d.hdslb.com/bfs/album/%s", tools.RangeRand(0, 4), sha1)
+func (b *BiLiBiLi) formatUrl(metaurl string) string {
+	return fmt.Sprintf("http://i%d.hdslb.com/bfs/album/%s", tools.RangeRand(0, 4), metaurl)
 }
 
 func (b *BiLiBiLi) Name() string {
-	return Name
+	return "bilibili"
 }
 
 func (b *BiLiBiLi) MaxSize() int {
@@ -22,7 +21,7 @@ func (b *BiLiBiLi) MaxSize() int {
 }
 
 func (b *BiLiBiLi) SuperEncoder() []string {
-	return []string{encoder.BMP2BIT, encoder.PNGALPHA, encoder.PNGNOTALPHA}
+	return []string{"pngrgb", "pngrgba", "bmp2bit"}
 }
 
 /*DriverUsable*/

@@ -1,4 +1,4 @@
-package encoder
+package encoderpng
 
 import (
 	"bytes"
@@ -13,13 +13,7 @@ import (
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
-const PNGALPHA = "pngalpha"
-
 type PNGAlpha struct {
-}
-
-func (*PNGAlpha) Name() string {
-	return PNGALPHA
 }
 
 // 编码
