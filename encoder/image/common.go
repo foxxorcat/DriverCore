@@ -1,7 +1,6 @@
 package encoderimage
 
 import (
-	"bytes"
 	"encoding/binary"
 	"image"
 	"image/color/palette"
@@ -10,28 +9,22 @@ import (
 	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 )
 
-func DataToImage(in []byte, option encodercommon.EncoderOption, buf *bytes.Buffer) (image.Image, error) {
+func DataToImage(in []byte, option encodercommon.EncoderOption) (image.Image, error) {
 	var (
 		img  image.Image
+		buf  []byte
 		size int
 	)
-	if buf == nil {
-		buf = &bytes.Buffer{}
-	}
-	buf.Reset()
 
 	switch option.Mode {
 	case encodercommon.RGB:
 		size = int(math.Max(float64(option.MinSize), math.Ceil(math.Sqrt(math.Ceil(float64(len(in)+4)/3))))) // 计算图片长宽
-		buf.Grow(4 * size * size)
-		buf := buf.Bytes()[:4*size*size]
+		buf = make([]byte, 4*size*size)
 
 		// 优先填充8bit
 		binary.LittleEndian.PutUint32(buf[:4], uint32(len(in)))
 		buf[4], buf[3], buf[7] = buf[3], 255, 255
-		n := copy(buf[5:7], in)
-
-		src, dct := in[n:], buf[8:]
+		src, dct := in[copy(buf[5:7], in):], buf[8:]
 		for len(dct) > 0 {
 			if len(src) > 0 {
 				src = src[copy(dct[:3], src):]
@@ -42,28 +35,26 @@ func DataToImage(in []byte, option encodercommon.EncoderOption, buf *bytes.Buffe
 
 	case encodercommon.RGBA:
 		size = int(math.Max(float64(option.MinSize), math.Ceil(math.Sqrt(math.Ceil(float64(len(in)+4)/4))))) // 计算图片长宽
-		buf.Grow(4 * size * size)
-		buf := buf.Bytes()[:4*size*size]
+		buf = make([]byte, 4*size*size)
 		binary.LittleEndian.PutUint32(buf[:4], uint32(len(in)))
 		copy(buf[4:], in)
 
 	case encodercommon.Paletted, encodercommon.Gray:
 		size = int(math.Max(float64(option.MinSize), math.Ceil(math.Sqrt(float64(len(in)+4))))) // 计算图片长宽
-		buf.Grow(4 * size * size)
-		buf := buf.Bytes()[:4*size*size]
+		buf = make([]byte, 4*size*size)
 		binary.LittleEndian.PutUint32(buf[:4], uint32(len(in)))
 		copy(buf[4:], in)
 
 	}
 	switch option.Mode {
 	case encodercommon.RGB:
-		img = &image.RGBA{Pix: buf.Bytes()[:4*size*size], Stride: 4 * size, Rect: image.Rect(0, 0, size, size)}
+		img = &image.RGBA{Pix: buf, Stride: 4 * size, Rect: image.Rect(0, 0, size, size)}
 	case encodercommon.RGBA:
-		img = &image.NRGBA{Pix: buf.Bytes()[:4*size*size], Stride: 4 * size, Rect: image.Rect(0, 0, size, size)}
+		img = &image.NRGBA{Pix: buf, Stride: 4 * size, Rect: image.Rect(0, 0, size, size)}
 	case encodercommon.Paletted:
-		img = &image.Paletted{Pix: buf.Bytes()[:4*size*size], Stride: size, Rect: image.Rect(0, 0, size, size), Palette: palette.Plan9}
+		img = &image.Paletted{Pix: buf, Stride: size, Rect: image.Rect(0, 0, size, size), Palette: palette.Plan9}
 	case encodercommon.Gray:
-		img = &image.Gray{Pix: buf.Bytes()[:4*size*size], Stride: size, Rect: image.Rect(0, 0, size, size)}
+		img = &image.Gray{Pix: buf, Stride: size, Rect: image.Rect(0, 0, size, size)}
 	default:
 		return nil, encodercommon.ErrNotSuperImageMod
 	}

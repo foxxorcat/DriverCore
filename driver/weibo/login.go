@@ -101,10 +101,10 @@ func (b *WeiBo) QrcodeLogin(ctx context.Context, show func(ctx context.Context, 
 		case 50114002:
 			//等待确认
 			time.Sleep(time.Second)
-		case 50114004:
-			//超时
-			err = drivercommon.ErrQRCodeFailure
-			return
+		//case 50114004:
+		//超时
+		//err = drivercommon.ErrQRCodeFailure
+		//return
 		case 20000000:
 			//成功
 			b.client.GET("https://login.sina.com.cn/sso/login.php").

@@ -2,7 +2,6 @@ package encoderimage
 
 import (
 	"bytes"
-	"sync"
 
 	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 	"golang.org/x/image/bmp"
@@ -18,13 +17,10 @@ const (
 
 type Bmp struct {
 	encodercommon.EncoderOption
-	byteBuffer sync.Pool
 }
 
 func (b *Bmp) Encode(in []byte) ([]byte, error) {
-	c := b.byteBuffer.Get().(*bytes.Buffer)
-	defer b.byteBuffer.Put(c)
-	img, err := DataToImage(in, b.EncoderOption, c)
+	img, err := DataToImage(in, b.EncoderOption)
 	if err != nil {
 		return nil, err
 	}
@@ -46,10 +42,5 @@ func (*Bmp) Decode(in []byte) ([]byte, error) {
 func NewBmp(option encodercommon.EncoderOption) *Bmp {
 	return &Bmp{
 		EncoderOption: option,
-		byteBuffer: sync.Pool{
-			New: func() interface{} {
-				return &bytes.Buffer{}
-			},
-		},
 	}
 }

@@ -2,7 +2,7 @@ package encodercommon
 
 type EncoderOption struct {
 	//MaxSize uint
-	MinSize uint
+	MinSize int
 
 	Mode EncoderMode
 }

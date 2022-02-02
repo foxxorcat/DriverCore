@@ -49,8 +49,6 @@ func (b *BiLiBiLi) SetAuthorization(auto string) error {
 
 //二维码登录
 func (b *BiLiBiLi) QrcodeLogin(ctx context.Context, show func(ctx context.Context, image image.Image) error) (cookie string, err error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	// 获取二维码
 	var qrres struct {
@@ -77,6 +75,11 @@ func (b *BiLiBiLi) QrcodeLogin(ctx context.Context, show func(ctx context.Contex
 	// 检查二维码状态
 	var body []byte
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		b.client.POST("https://passport.bilibili.com/qrcode/getLoginInfo").
 			SetWWWForm(gout.H{
 				"oauthKey": qrres.Data.OauthKey,

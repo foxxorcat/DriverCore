@@ -8,16 +8,13 @@ import (
 )
 
 func (b *WeiBo) SetOption(options ...drivercommon.Option) error {
-	var err error
-	for _, option := range options {
-		if err = option.Apply(&b.option); err != nil {
-			return err
-		}
+	if err := b.option.SetOption(options...); err != nil {
+		return err
 	}
 
 	switch e := b.option.Encoder.(type) {
 	case *encoderimage.Gif:
-		e.MinSize = uint(math.Max(float64(e.MinSize), 10))
+		e.MinSize = int(math.Max(float64(e.MinSize), 10))
 	}
 	b.client.SetTimeout(b.option.Timeout)
 	return nil

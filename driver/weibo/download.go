@@ -2,8 +2,7 @@ package weibo
 
 import (
 	"context"
-
-	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
+	"fmt"
 )
 
 func (b *WeiBo) Download(ctx context.Context, metaurl string) ([]byte, error) {
@@ -17,7 +16,7 @@ func (b *WeiBo) Download(ctx context.Context, metaurl string) ([]byte, error) {
 		Do()
 
 	if code != 200 {
-		return nil, drivercommon.ErrDownload
+		return nil, fmt.Errorf("下载失败,%s", string(data))
 	}
 
 	if data, err = b.option.Encoder.Decode(data); err != nil {

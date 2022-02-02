@@ -18,6 +18,4 @@ var (
 
 var (
 	ErrMetaUrlFailure = errors.New("metaUrl失效")
-	ErrMetaUrl        = errors.New("metaUrl错误")
-	ErrDownload       = errors.New("下载错误")
 )

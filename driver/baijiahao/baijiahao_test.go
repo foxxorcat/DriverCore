@@ -12,11 +12,10 @@ import (
 
 func Test(t *testing.T) {
 	driver := New()
-	rawdata := tools.RandomBytes(1024 * 512)
-
 	for _, name := range encoder.EncoderList {
 		encoder, _ := encoder.NewEncoder(name, encodercommon.EncoderOption{})
 		driver.SetOption(drivercommon.WithEncoder(encoder))
+		rawdata := tools.RandomBytes(int64(driver.MaxSize()))
 		url, err := driver.Upload(context.Background(), rawdata)
 		if err != nil {
 			t.Errorf("%s 错误信息%s", name, err)

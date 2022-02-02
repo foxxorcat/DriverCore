@@ -19,7 +19,14 @@ func (b *BiLiBiLi) Name() string {
 }
 
 func (b *BiLiBiLi) MaxSize() int {
-	return drivercommon.BlockSize16MIB
+	switch b.option.Encoder.(type) {
+	case *encoderimage.Gif:
+		return 14 * (2 << 19) // 16MIB
+	case *encoderimage.Png:
+		return 18 * (2 << 19) // 18MIB
+	default:
+		return 20 * (2 << 19) // 20MIB
+	}
 }
 
 func (bjh *BiLiBiLi) SuperEncoder() []string {
@@ -50,6 +57,6 @@ func (b *BiLiBiLi) SpaceSize() drivercommon.SpaceSize {
 // 检查链接是否有效
 func (b *BiLiBiLi) CheckUrl(ctx context.Context, metaurl string) bool {
 	var code int
-	err := b.client.HEAD(b.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
-	return err == nil && code == 200
+	b.client.HEAD(b.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
+	return code == 200
 }

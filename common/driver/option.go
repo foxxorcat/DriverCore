@@ -19,6 +19,16 @@ type DriverOption struct {
 	Crypto cryptocommon.CryptoPlugin // 加密器
 }
 
+func (b *DriverOption) SetOption(options ...Option) error {
+	var err error
+	for _, option := range options {
+		if err = option.Apply(b); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type Option interface {
 	Apply(*DriverOption) error
 }

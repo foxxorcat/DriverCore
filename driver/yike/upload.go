@@ -2,8 +2,6 @@ package yike
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"math"
 	"strings"
@@ -27,25 +25,22 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 	}
 
 	// 处理上传需要的信息
-	sliceList, md5r := strings.Builder{}, md5.New() //md5
-	sliceList.Grow((len(block)/drivercommon.BlockSize4MIB+1)*35 + 1)
+	sliceList, src := strings.Builder{}, block
 
 	sliceList.WriteByte('[')
-
-	for src := block; len(src) > 0; {
-		i := int(math.Min(float64(len(src)), float64(drivercommon.BlockSize4MIB)))
+	for len(src) > 0 {
+		n := int(math.Min(float64(len(src)), float64(drivercommon.BlockSize4MIB)))
 		sliceList.WriteByte('"')
-		sliceList.WriteString(tools.Md5Hex(src[:i]))
+		sliceList.WriteString(tools.Md5Hex(src[:n]))
 		sliceList.WriteByte('"')
-		md5r.Write(src[:i])
-		src = src[i:]
+		src = src[n:]
 		if len(src) > 0 {
 			sliceList.WriteByte(',')
 		}
 	}
 	sliceList.WriteByte(']')
 
-	md5 := hex.EncodeToString(md5r.Sum(nil))
+	md5 := tools.Md5Hex(block)
 	param := Param{
 		Size:       fmt.Sprint(len(block)),
 		ContentMd5: tools.Md5Hex(block[:int(math.Min(float64(len(block)), 256*1024))]),
@@ -54,11 +49,8 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 		Path:       fmt.Sprintf("/%s.%s", md5, b.suffix),
 	}
 
-	// 判断状态
-	p, err := b.precreate(ctx, param)
-	if err != nil {
-		return "", err
-	}
+	// 判断文件状态
+	p, _ := b.precreate(ctx, param)
 
 	switch p.ReturnType {
 	case 1:
@@ -67,9 +59,9 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 			YiKeError
 			Md5, Partseq, Uploadid string
 		}
-		src, n := block, 0
-		for len(src) > 0 {
-			i := int(math.Min(float64(len(src)), float64(drivercommon.BlockSize4MIB)))
+
+		for src, i := block, 0; len(src) > 0; i++ {
+			n := int(math.Min(float64(len(src)), float64(drivercommon.BlockSize4MIB))) //块最大4MIB
 			b.client.POST("https://c3.pcs.baidu.com/rest/2.0/pcs/superfile2").
 				WithContext(ctx).
 				SetQuery(gout.H{
@@ -81,27 +73,25 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 					"logid":      getLogID(),
 					"path":       param.Path,
 					"uploadid":   p.UploadID,
-					"partseq":    fmt.Sprint(n),
+					"partseq":    fmt.Sprint(i),
 				}).
 				SetForm(gout.H{
-					"file": gout.FormType{File: gout.FormMem(src[:i]), FileName: "blob", ContentType: "application/octet-stream"},
+					"file": gout.FormType{File: gout.FormMem(src[:n]), FileName: "blob", ContentType: "application/octet-stream"},
 				}).
-				BindJSON(&reqdata).
-				Filter().Retry().Attempt(b.option.Attempt).Func(
-				func(c *dataflow.Context) error {
-					c.BindJSON(&reqdata)
-					if reqdata.Errno != 0 {
+				Filter().Retry().Attempt(b.option.Attempt).
+				Func(func(c *dataflow.Context) error {
+					c.BindJSON(&reqdata).Do()
+					if c.Error != nil || reqdata.Errno != 0 || reqdata.RequestID == 0 {
+						err = drivercommon.ErrApiFailure
 						return filter.ErrRetry
 					}
 					return nil
 				}).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
 				Do()
-
-			if reqdata.RequestID == 0 {
-				err = drivercommon.ErrApiFailure
+			if err != nil {
 				return
 			}
-			src = src[i:]
+			src = src[n:]
 		}
 		fallthrough
 	case 2:
@@ -124,23 +114,21 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 				"clienttype": "70",
 				"bdstoken":   b.getbdstoken(),
 			}).
-			BindJSON(&precreateresp).
-			Filter().Retry().Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
+			Filter().Retry().Attempt(b.option.Attempt).
 			Func(func(c *dataflow.Context) error {
-				c.BindJSON(&precreateresp)
-				if precreateresp.Errno != 0 {
+				c.BindJSON(&precreateresp).Do()
+				if c.Error != nil || precreateresp.Errno != 0 || precreateresp.RequestID == 0 {
+					err = drivercommon.ErrApiFailure
 					return filter.ErrRetry
 				}
 				return nil
-			}).
+			}).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
 			Do()
-		if precreateresp.Errno != 0 {
-			err = drivercommon.ErrApiFailure
+		if err != nil {
 			return
 		}
 		fallthrough
 	case 3:
-
 		// 返回metaurl
 		metaurl = fmt.Sprintf("%s#%s#%s#%s.%s", param.BlockMd5, param.ContentMd5, param.Size, param.BlockMd5, b.suffix)
 		return

@@ -3,7 +3,6 @@ package encoderimage
 import (
 	"bytes"
 	"image/png"
-	"sync"
 
 	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 )
@@ -18,18 +17,14 @@ const (
 
 type Png struct {
 	encodercommon.EncoderOption
-	byteBuffer sync.Pool
 }
 
 // 编码
 func (p *Png) Encode(in []byte) ([]byte, error) {
-	c := p.byteBuffer.Get().(*bytes.Buffer)
-	defer p.byteBuffer.Put(c)
-	img, err := DataToImage(in, p.EncoderOption, c)
+	img, err := DataToImage(in, p.EncoderOption)
 	if err != nil {
 		return nil, err
 	}
-
 	w := new(bytes.Buffer)
 	(&png.Encoder{CompressionLevel: png.NoCompression}).Encode(w, img)
 	return w.Bytes(), nil
@@ -48,10 +43,5 @@ func (*Png) Decode(in []byte) ([]byte, error) {
 func NewPng(option encodercommon.EncoderOption) *Png {
 	return &Png{
 		EncoderOption: option,
-		byteBuffer: sync.Pool{
-			New: func() interface{} {
-				return &bytes.Buffer{}
-			},
-		},
 	}
 }

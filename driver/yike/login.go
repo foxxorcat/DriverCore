@@ -27,11 +27,11 @@ func (b *YiKe) IsLogin() bool {
 		SetHeader(gout.H{"Referer": "https://photo.baidu.com"}).
 		BindJSON(&yiKeLoginRes).
 		Do()
-	return yiKeLoginRes.Errno == 0 && yiKeLoginRes.YouaID != ""
+	return yiKeLoginRes.RequestID != 0 && yiKeLoginRes.Errno == 0 && yiKeLoginRes.YouaID != ""
 }
 
-func (b *YiKe) SetAuthorization(auto string) error {
-	cookies := tools.Str2Cookie(auto)
+func (b *YiKe) SetAuthorization(cookie string) error {
+	cookies := tools.Str2Cookie(cookie)
 	for _, cookie := range cookies {
 		if cookie.Domain == "" {
 			cookie.Domain = ".baidu.com"
@@ -43,7 +43,7 @@ func (b *YiKe) SetAuthorization(auto string) error {
 	if !b.IsLogin() {
 		return drivercommon.ErrLoginFail
 	}
-	b.bdstoken = b.getbdstoken()
+	b.bdstoken, b.bdstoken = "", b.getbdstoken()
 	return nil
 }
 
@@ -82,6 +82,11 @@ func (b *YiKe) QrcodeLogin(ctx context.Context, show func(ctx context.Context, i
 	}
 
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		b.client.GET("https://passport.baidu.com/channel/unicast").
 			WithContext(ctx).
 			BindBody(&body).SetQuery(gout.H{

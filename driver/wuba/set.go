@@ -1,4 +1,4 @@
-package bilibili
+package wuba
 
 import (
 	"math"
@@ -8,23 +8,23 @@ import (
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
-func (b *BiLiBiLi) SetOption(options ...drivercommon.Option) error {
-	if err := b.option.SetOption(options...); err != nil {
+func (wb *WuBa) SetOption(options ...drivercommon.Option) error {
+	if err := wb.option.SetOption(options...); err != nil {
 		return err
 	}
 
-	switch e := b.option.Encoder.(type) {
+	switch e := wb.option.Encoder.(type) {
 	case *encoderimage.Png:
 		e.MinSize = int(math.Max(float64(e.MinSize), 10))
-		b.suffix = "png"
+		wb.suffix = "png"
 	case *encoderimage.Gif:
 		e.MinSize = int(math.Max(float64(e.MinSize), 10))
-		b.suffix = "gif"
+		wb.suffix = "gif"
 	default:
 		// 未知类型猜测
-		v, _ := b.option.Encoder.Encode(tools.RandomBytes(512))
-		b.suffix = tools.GetFileType(v)
+		v, _ := wb.option.Encoder.Encode(tools.RandomBytes(512))
+		wb.suffix = tools.GetFileType(v)
 	}
-	b.client.SetTimeout(b.option.Timeout)
+	wb.client.SetTimeout(wb.option.Timeout)
 	return nil
 }

@@ -3,8 +3,6 @@ package yike
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"sort"
 
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
 	"github.com/guonaihong/gout"
@@ -31,53 +29,53 @@ type (
 )
 
 // 获取相册
-func (y *YiKe) GetAlbum(ctx context.Context, name ...string) (albumout []YiKeAlbum, err error) {
-	albumlist := YiKeAlbumList{}
-	err = y.client.GET("https://photo.baidu.com/youai/album/v1/list").BindJSON(&albumlist).WithContext(ctx).Do()
-	if albumlist.Errno != 0 {
+func (y *YiKe) GetAlbum(ctx context.Context, names ...string) (albumout []YiKeAlbum, err error) {
+	var albumlist YiKeAlbumList
+	y.client.GET("https://photo.baidu.com/youai/album/v1/list").BindJSON(&albumlist).WithContext(ctx).Do()
+	if albumlist.Errno != 0 || albumlist.RequestID == 0 {
 		err = drivercommon.ErrApiFailure
+		return
 	}
 	for _, album := range albumlist.List {
-		if sort.SearchStrings(name, album.Title) < 0 {
-			continue
+		for _, name := range names {
+			if name == album.Title {
+				albumout = append(albumout, album)
+				break
+			}
 		}
-		albumout = append(albumout, album)
 	}
 	return
 }
 
 // 创建相册
-func (y *YiKe) CreateAlbum(ctx context.Context, name string) (album YiKeAlbum, err error) {
-	albumc := YiKeAlbumCreate{}
+func (y *YiKe) CreateAlbum(ctx context.Context, name string) (*YiKeAlbum, error) {
+	var albumc YiKeAlbumCreate
 	y.client.GET("https://photo.baidu.com/youai/album/v1/create").BindJSON(&albumc).SetQuery(gout.H{
-		//"clienttype": "70",
-		"title":  name,
-		"source": "0",
-		"tid":    getTid(),
+		"clienttype": "70",
+		"title":      name,
+		"source":     "0",
+		"tid":        getTid(),
 	}).Do()
 
-	if albumc.Errno != 0 {
-		err = drivercommon.ErrApiFailure
-		return
+	if albumc.Errno != 0 || albumc.RequestID == 0 {
+		return nil, drivercommon.ErrApiFailure
 	}
-	album = albumc.Info
-	return
+	return &albumc.Info, nil
 }
 
 // 删除相册
-func (y *YiKe) DeleteAlbum(ctx context.Context, album YiKeAlbum, deletesource bool) error {
-	ro := 0
-	if deletesource {
-		ro = 1
-	}
-
+func (y *YiKe) DeleteAlbum(ctx context.Context, album *YiKeAlbum, deletesource bool) error {
 	var err YiKeError
-
 	y.client.POST("https://photo.baidu.com/youai/album/v1/delete").
 		SetForm(gout.H{
-			"album_id":            album.AlbumID,
-			"delete_origin_image": ro,
-			"tid":                 album.Tid,
+			"album_id": album.AlbumID,
+			"delete_origin_image": func() int {
+				if deletesource {
+					return 1
+				}
+				return 0
+			}(),
+			"tid": album.Tid,
 		}).
 		BindJSON(&err).
 		Do()
@@ -90,17 +88,17 @@ func (y *YiKe) DeleteAlbum(ctx context.Context, album YiKeAlbum, deletesource bo
 //删除文件
 func (y *YiKe) Delete(ctx context.Context, fileID ...int64) error {
 	var err YiKeError
-	v, _ := json.Marshal(fileID)
+	data, _ := json.Marshal(fileID)
 	y.client.GET("https://photo.baidu.com/youai/file/v1/delete").
 		WithContext(ctx).
 		SetQuery(gout.H{
-			"fsid_list": string(v),
+			"fsid_list": string(data),
 		}).
 		BindJSON(&err).
 		Do()
 
-	if err.Errno != 0 {
-		return fmt.Errorf("删除错误")
+	if err.Errno != 0 || err.RequestID == 0 {
+		return drivercommon.ErrApiFailure
 	}
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/foxxorcat/DriverCore/driver/baijiahao"
 	"github.com/foxxorcat/DriverCore/driver/bilibili"
 	"github.com/foxxorcat/DriverCore/driver/weibo"
+	"github.com/foxxorcat/DriverCore/driver/wuba"
 	"github.com/foxxorcat/DriverCore/driver/yike"
 )
 
@@ -13,9 +14,10 @@ var DriverList = []string{
 	weibo.NAME,
 	bilibili.NAME,
 	yike.NAME,
+	wuba.NAME,
 }
 
-func NewDriver(name string) (driver drivercommon.DriverPlugin, err error) {
+func NewDriver(name string) (drivercommon.DriverPlugin, error) {
 	switch name {
 	case baijiahao.NAME:
 		return baijiahao.New(), nil
@@ -25,6 +27,8 @@ func NewDriver(name string) (driver drivercommon.DriverPlugin, err error) {
 		return weibo.New(), nil
 	case yike.NAME:
 		return yike.New(), nil
+	case wuba.NAME:
+		return wuba.New(), nil
 	default:
 		return nil, drivercommon.ErrNoFindDriver
 	}

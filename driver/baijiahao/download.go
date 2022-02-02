@@ -9,14 +9,11 @@ func (bjh *BaiJiaHao) Download(ctx context.Context, metaurl string) ([]byte, err
 	var (
 		data []byte
 		code int
+		err  error
 	)
-	err := bjh.client.GET(bjh.formatUrl(metaurl)).WithContext(ctx).Code(&code).BindBody(&data).
+	bjh.client.GET(bjh.formatUrl(metaurl)).WithContext(ctx).Code(&code).BindBody(&data).
 		Filter().Retry().Attempt(bjh.option.Attempt).MaxWaitTime(bjh.option.MaxWaitTime).WaitTime(bjh.option.WaitTime).
 		Do()
-
-	if err != nil {
-		return nil, err
-	}
 
 	if code != 200 {
 		return nil, fmt.Errorf("下载失败,%s", string(data))

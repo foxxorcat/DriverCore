@@ -17,7 +17,16 @@ func (bjh *BaiJiaHao) Name() string {
 }
 
 func (bjh *BaiJiaHao) MaxSize() int {
-	return drivercommon.BlockSize16MIB
+	switch bjh.option.Encoder.(type) {
+	case *encoderimage.Gif:
+		return 14 * (2 << 19) // 16MIB
+	case *encoderimage.Png:
+		return 18 * (2 << 19) // 28MIB
+	case *encoderimage.Bmp:
+		return 19 * (2 << 19) // 29MIB
+	default:
+		return 20 * (2 << 19) // 30MIB
+	}
 }
 
 func (bjh *BaiJiaHao) SuperEncoder() []string {
@@ -53,6 +62,6 @@ func (bjh *BaiJiaHao) SpaceSize() drivercommon.SpaceSize {
 
 func (bjh *BaiJiaHao) CheckUrl(ctx context.Context, metaurl string) bool {
 	var code int
-	err := bjh.client.HEAD(bjh.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
-	return err == nil && code == 200
+	bjh.client.HEAD(bjh.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
+	return code == 200
 }

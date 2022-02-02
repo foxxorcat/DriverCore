@@ -45,8 +45,7 @@ type (
 	}
 )
 
-func (b *YiKe) precreate(ctx context.Context, param Param) (*YiKePrecreateResp, error) {
-	precreateresp := YiKePrecreateResp{}
+func (b *YiKe) precreate(ctx context.Context, param Param) (precreateresp YiKePrecreateResp, err error) {
 	b.client.POST("https://photo.baidu.com/youai/file/v1/precreate").
 		WithContext(ctx).
 		SetForm(gout.H{
@@ -64,18 +63,15 @@ func (b *YiKe) precreate(ctx context.Context, param Param) (*YiKePrecreateResp, 
 			"clienttype": "70",
 			"bdstoken":   b.getbdstoken(),
 		}).
-		BindJSON(&precreateresp).
 		Filter().Retry().Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
 		Func(func(c *dataflow.Context) error {
-			c.BindJSON(&precreateresp)
-			if precreateresp.Errno != 0 {
+			c.BindJSON(&precreateresp).Do()
+			if c.Error != nil || precreateresp.Errno != 0 || precreateresp.RequestID == 0 {
+				err = drivercommon.ErrApiFailure
 				return filter.ErrRetry
 			}
 			return nil
 		}).
 		Do()
-	if precreateresp.Errno != 0 || precreateresp.ReturnType == 0 {
-		return nil, drivercommon.ErrApiFailure
-	}
-	return &precreateresp, nil
+	return
 }

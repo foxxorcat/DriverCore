@@ -2,11 +2,12 @@ package bilibili
 
 import (
 	"context"
-	"fmt"
 
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
 	"github.com/foxxorcat/DriverCore/tools"
 	"github.com/guonaihong/gout"
+	"github.com/guonaihong/gout/dataflow"
+	"github.com/guonaihong/gout/filter"
 )
 
 func (b *BiLiBiLi) Upload(ctx context.Context, block []byte) (sha1 string, err error) {
@@ -28,21 +29,23 @@ func (b *BiLiBiLi) Upload(ctx context.Context, block []byte) (sha1 string, err e
 			Code    int
 			Message string
 		}
-		if err = b.client.POST("https://api.vc.bilibili.com/api/v1/drawImage/upload").
+		b.client.POST("https://api.vc.bilibili.com/api/v1/drawImage/upload").
 			WithContext(ctx).
 			SetForm(gout.H{
 				"biz":      "draw",
 				"category": "daily",
 				"file_up":  gout.FormMem(block),
-			}).BindJSON(&bilires).
-			Filter().Retry().Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
-			Do(); err != nil {
-			return
-		}
-		if bilires.Code != 0 {
-			err = fmt.Errorf(bilires.Message)
-			return
-		}
+			}).
+			Filter().Retry().
+			Func(func(c *dataflow.Context) error {
+				c.BindJSON(&bilires).Do()
+				if c.Error != nil || bilires.Code != 0 || bilires.Message == "" {
+					err = drivercommon.ErrApiFailure
+					return filter.ErrRetry
+				}
+				return nil
+			}).Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
+			Do()
 	}
-	return sha1, nil
+	return
 }

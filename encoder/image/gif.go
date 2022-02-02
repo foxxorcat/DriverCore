@@ -3,7 +3,6 @@ package encoderimage
 import (
 	"bytes"
 	"image/gif"
-	"sync"
 
 	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 )
@@ -15,7 +14,6 @@ const (
 
 type Gif struct {
 	encodercommon.EncoderOption
-	byteBuffer sync.Pool
 }
 
 func (f *Gif) Encode(in []byte) ([]byte, error) {
@@ -23,9 +21,7 @@ func (f *Gif) Encode(in []byte) ([]byte, error) {
 		return nil, encodercommon.ErrNotSuperImageMod
 	}
 
-	c := f.byteBuffer.Get().(*bytes.Buffer)
-	defer f.byteBuffer.Put(c)
-	img, err := DataToImage(in, f.EncoderOption, c)
+	img, err := DataToImage(in, f.EncoderOption)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +43,5 @@ func (*Gif) Decode(in []byte) ([]byte, error) {
 func NewGif(option encodercommon.EncoderOption) *Gif {
 	return &Gif{
 		EncoderOption: option,
-		byteBuffer: sync.Pool{
-			New: func() interface{} {
-				return &bytes.Buffer{}
-			},
-		},
 	}
 }

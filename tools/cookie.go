@@ -7,11 +7,7 @@ import (
 
 // 字符串cookie拆分
 func Str2Cookie(cookie string) (cookies []*http.Cookie) {
-	header := http.Header{}
-	header.Add("Cookie", cookie)
-	request := http.Request{Header: header}
-	return request.Cookies()
-
+	return (&http.Request{Header: http.Header{"Cookie": {cookie}}}).Cookies()
 }
 
 func Cookies2Str(cookies []*http.Cookie) string {

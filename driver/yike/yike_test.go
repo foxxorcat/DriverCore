@@ -17,22 +17,23 @@ import (
 func Test(t *testing.T) {
 	driver := New()
 
-	pwd, _ := os.Getwd()
 	str, err := driver.QrcodeLogin(context.Background(), func(ctx context.Context, image image.Image) error {
-		file, _ := os.OpenFile(filepath.Join(pwd, "qrcode.png"), os.O_CREATE|os.O_RDWR, os.ModePerm)
+		file, _ := os.OpenFile(filepath.Join(tools.GetCurrentDir1(), "qrcode.png"), os.O_CREATE|os.O_RDWR, os.ModePerm)
 		defer file.Close()
 		return png.Encode(file, image)
 	})
+	os.Remove(filepath.Join(tools.GetCurrentDir1(), "qrcode.png"))
 	if err != nil {
 		t.Fatalf("错误信息%s", err)
 		return
 	}
 
 	driver.SetAuthorization(str)
-	rawdata := tools.RandomBytes(1024 * 1024 * 1)
 	for _, name := range encoder.EncoderList {
 		encoder, _ := encoder.NewEncoder(name, encodercommon.EncoderOption{})
 		driver.SetOption(drivercommon.WithEncoder(encoder))
+		rawdata := tools.RandomBytes(int64(driver.MaxSize()))
+
 		url, err := driver.Upload(context.Background(), rawdata)
 		if err != nil {
 			t.Errorf("%s 错误信息%s", name, err)

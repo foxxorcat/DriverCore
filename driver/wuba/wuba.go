@@ -1,4 +1,4 @@
-package baijiahao
+package wuba
 
 import (
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
@@ -9,17 +9,17 @@ import (
 	"github.com/guonaihong/gout"
 )
 
-const NAME = "baijiahao"
+const NAME = "wuba"
 
-type BaiJiaHao struct {
+type WuBa struct {
 	option drivercommon.DriverOption
 	suffix string
 	client *gout.Client
 }
 
-func New() *BaiJiaHao {
+func New() *WuBa {
 	e, _ := encoder.NewEncoder(encoderimage.PNGRGBA, encodercommon.EncoderOption{})
-	driver := new(BaiJiaHao)
+	driver := new(WuBa)
 	driver.client = gout.NewWithOpt(gout.WithTimeout(driver.option.Timeout), gout.WithInsecureSkipVerify())
 	driver.SetOption(drivercommon.WithCrypto(&crypto.None{}), drivercommon.WithEncoder(e))
 	return driver

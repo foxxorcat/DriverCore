@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"regexp"
+	"strings"
 
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
 	"github.com/guonaihong/gout"
+	"github.com/guonaihong/gout/dataflow"
+	"github.com/guonaihong/gout/filter"
 )
 
 func (b *WeiBo) Upload(ctx context.Context, block []byte) (metaurl string, err error) {
@@ -20,8 +23,8 @@ func (b *WeiBo) Upload(ctx context.Context, block []byte) (metaurl string, err e
 		return
 	}
 
-	var body []byte
-	if err = b.client.POST("https://picupload.weibo.com/interface/pic_upload.php").
+	var data string
+	b.client.POST("https://picupload.weibo.com/interface/pic_upload.php").
 		WithContext(ctx).
 		SetForm(gout.H{
 			"b64_data": base64.StdEncoding.EncodeToString(block),
@@ -31,15 +34,17 @@ func (b *WeiBo) Upload(ctx context.Context, block []byte) (metaurl string, err e
 			//"mime": tools.GetContentType(block),
 			"data": "base64",
 		}).
-		BindBody(&body).
-		Filter().Retry().Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
-		Do(); err != nil {
-		return
-	}
-
-	metaurl = string(regexp.MustCompile(`\w{32}`).Find(body))
-	if metaurl == "" {
-		err = drivercommon.ErrApiFailure
-	}
+		Filter().Retry().
+		Func(func(c *dataflow.Context) error {
+			c.BindBody(&data).Do()
+			metaurl = strings.TrimFunc(regexp.MustCompile(`("|')\w{32}("|')`).FindString(data), func(r rune) bool { return r == '\'' || r == '"' })
+			if c.Error != nil || metaurl == "" {
+				err = drivercommon.ErrApiFailure
+				return filter.ErrRetry
+			}
+			return nil
+		}).
+		Attempt(b.option.Attempt).MaxWaitTime(b.option.MaxWaitTime).WaitTime(b.option.WaitTime).
+		Do()
 	return
 }

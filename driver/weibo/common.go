@@ -19,7 +19,7 @@ func (*WeiBo) Name() string {
 }
 
 func (*WeiBo) MaxSize() int {
-	return drivercommon.BlockSize16MIB
+	return 16 * (2 << 19) // 16MIB
 }
 
 func (*WeiBo) SuperEncoder() []string {
@@ -46,6 +46,6 @@ func (*WeiBo) SpaceSize() drivercommon.SpaceSize {
 // 检查链接是否有效
 func (b *WeiBo) CheckUrl(ctx context.Context, metaurl string) bool {
 	var code int
-	err := b.client.HEAD(b.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
-	return err == nil && code == 200
+	b.client.HEAD(b.formatUrl(metaurl)).Code(&code).WithContext(ctx).Do()
+	return code == 200
 }

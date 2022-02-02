@@ -35,17 +35,26 @@ func (y *YiKe) getbdstoken() string {
 	if y.bdstoken != "" {
 		return y.bdstoken
 	}
-	var body []byte
-	y.client.GET("https://photo.baidu.com").BindBody(&body).Do()
-	return string(regexp.MustCompile(`\w{32}`).Find(body))
+	var data string
+	y.client.GET("https://photo.baidu.com").BindBody(&data).Do()
+	return strings.TrimFunc(regexp.MustCompile(`("|')\w{32}("|')`).FindString(data), func(r rune) bool { return r == '\'' || r == '"' })
 }
 
 func (*YiKe) Name() string {
 	return NAME
 }
 
-func (*YiKe) MaxSize() int {
-	return drivercommon.BlockSize16MIB
+func (y *YiKe) MaxSize() int {
+	switch y.option.Encoder.(type) {
+	case *encoderimage.Gif:
+		return 16 * (2 << 19) // 16MIB
+	case *encoderimage.Png:
+		return 28 * (2 << 19) // 28MIB
+	case *encoderimage.Bmp:
+		return 29 * (2 << 19) // 29MIB
+	default:
+		return 30 * (2 << 19) // 30MIB
+	}
 }
 
 func (*YiKe) SuperEncoder() []string {
@@ -80,24 +89,20 @@ func (b *YiKe) SpaceSize() drivercommon.SpaceSize {
 		IsUnlimit int `json:"is_unlimit"`
 	}
 	b.client.GET("https://photo.baidu.com/youai/user/v1/quotainfo").BindJSON(&quotainfo).Do()
-	if quotainfo.IsUnlimit == 1 {
-		return drivercommon.SpaceSize{
-			Total: -1,
-			Usage: quotainfo.Used,
-		}
-	}
 	return drivercommon.SpaceSize{
-		Total: quotainfo.Quota,
+		Total: func() int64 {
+			if quotainfo.IsUnlimit == 1 {
+				return -1
+			}
+			return quotainfo.Quota
+		}(),
 		Usage: quotainfo.Used,
 	}
 }
 
 // 检查链接是否有效
 func (b *YiKe) CheckUrl(ctx context.Context, metaurl string) bool {
-	p, err := b.precreate(ctx, b.formatUrl(metaurl))
-	if err != nil {
-		return false
-	}
+	p, _ := b.precreate(ctx, b.formatUrl(metaurl))
 	if p.ReturnType == 2 {
 		b.Delete(ctx, p.Data.FsID)
 	}
@@ -107,12 +112,10 @@ func (b *YiKe) CheckUrl(ctx context.Context, metaurl string) bool {
 func (b *YiKe) formatUrl(metaurl string) (param Param) {
 	info := strings.Split(metaurl, "#")
 	if len(info) == 4 {
-		return Param{
-			Path:       fmt.Sprintf("/%s", info[3]),
-			Size:       info[2],
-			BlockMd5:   info[0],
-			ContentMd5: info[1],
-		}
+		param.Path = fmt.Sprintf("/%s", info[3])
+		param.Size = info[2]
+		param.BlockMd5 = info[0]
+		param.ContentMd5 = info[1]
 	}
 	return
 }
