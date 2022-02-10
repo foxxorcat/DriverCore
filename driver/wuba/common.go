@@ -10,7 +10,7 @@ import (
 )
 
 func (wb *WuBa) formatUrl(metaurl string) string {
-	return fmt.Sprintf("https://pic%d.58cdn.com.cn/nowater/webim/big/n_v2%s.%s", tools.RangeRand(1, 5), metaurl, wb.suffix)
+	return fmt.Sprintf("https://pic%d.58cdn.com.cn/nowater/webim/big/n_v2%s%s", tools.RangeRand(1, 5), metaurl, wb.option.Encoder.Type())
 }
 
 func (wb *WuBa) Name() string {

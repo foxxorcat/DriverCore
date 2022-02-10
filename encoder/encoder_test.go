@@ -1,15 +1,15 @@
 package encoder
 
 import (
+	"hash/crc32"
 	"testing"
 
-	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 	"github.com/foxxorcat/DriverCore/tools"
 )
 
 func TestEncoder(t *testing.T) {
 	for _, encoderName := range EncoderList {
-		encoder, err := NewEncoder(encoderName, encodercommon.EncoderOption{})
+		encoder, err := NewEncoder(encoderName)
 		if err != nil {
 			t.Errorf("%s 创建失败，错误信息%s", encoderName, err)
 			continue
@@ -26,7 +26,8 @@ func TestEncoder(t *testing.T) {
 				t.Errorf("块长度%d,参数%s,错误信息%s", len(rawdata), encoderName, err)
 				continue
 			}
-			if tools.XXHash64Hex(rawdata) != tools.XXHash64Hex(newdata) {
+
+			if crc32.ChecksumIEEE(rawdata) != crc32.ChecksumIEEE(newdata) {
 				t.Errorf("块长度%d,参数%s,错误信息%s", len(rawdata), encoderName, "hash 验证失败")
 			}
 		}
@@ -40,7 +41,7 @@ func BenchmarkEncode(b *testing.B) {
 	b.StartTimer()
 	for _, encoderName := range EncoderList {
 		b.Run(encoderName, func(b *testing.B) {
-			encoder, err := NewEncoder(encoderName, encodercommon.EncoderOption{})
+			encoder, err := NewEncoder(encoderName)
 			if err != nil {
 				b.Errorf("%s 创建失败，错误信息%s", encoderName, err)
 				return
@@ -56,7 +57,7 @@ func BenchmarkEncode(b *testing.B) {
 					b.Errorf("块长度%d,参数%s,错误信息%s", len(rawdata), encoderName, err)
 					continue
 				}
-				if tools.XXHash64Hex(rawdata) != tools.XXHash64Hex(newdata) {
+				if crc32.ChecksumIEEE(rawdata) != crc32.ChecksumIEEE(newdata) {
 					b.Errorf("块长度%d,参数%s,错误信息%s", len(rawdata), encoderName, "hash 验证失败")
 				}
 			}

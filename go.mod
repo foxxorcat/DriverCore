@@ -4,11 +4,10 @@ go 1.17
 
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da
-	github.com/cespare/xxhash v1.1.0
 	github.com/google/uuid v1.3.0
 	github.com/guonaihong/gout v0.2.11
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
+	golang.org/x/crypto v0.0.0-20220209195652-db638375bc3a
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
 )
 
@@ -20,7 +19,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

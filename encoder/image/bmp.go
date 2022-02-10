@@ -39,6 +39,14 @@ func (*Bmp) Decode(in []byte) ([]byte, error) {
 	return ImageToData(img)
 }
 
+func (*Bmp) Mime() string {
+	return "image/x-ms-bmp"
+}
+
+func (*Bmp) Type() string {
+	return ".bmp"
+}
+
 func NewBmp(option encodercommon.EncoderOption) *Bmp {
 	return &Bmp{
 		EncoderOption: option,

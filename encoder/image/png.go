@@ -40,6 +40,14 @@ func (*Png) Decode(in []byte) ([]byte, error) {
 	return ImageToData(img)
 }
 
+func (*Png) Mime() string {
+	return "image/png"
+}
+
+func (*Png) Type() string {
+	return ".png"
+}
+
 func NewPng(option encodercommon.EncoderOption) *Png {
 	return &Png{
 		EncoderOption: option,

@@ -64,8 +64,8 @@ func WithWaitTime(t time.Duration) Option {
 	return (*waitTime)(&t)
 }
 
-func (t *waitTime) Apply(o *DriverOption) error {
-	o.WaitTime = time.Duration(*t)
+func (t waitTime) Apply(o *DriverOption) error {
+	o.WaitTime = time.Duration(t)
 	return nil
 }
 
@@ -76,8 +76,8 @@ func WithMaxWaitTime(t time.Duration) Option {
 	return (*maxWaitTime)(&t)
 }
 
-func (t *maxWaitTime) Apply(o *DriverOption) error {
-	o.MaxWaitTime = time.Duration(*t)
+func (t maxWaitTime) Apply(o *DriverOption) error {
+	o.MaxWaitTime = time.Duration(t)
 	return nil
 }
 

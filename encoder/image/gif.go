@@ -40,6 +40,14 @@ func (*Gif) Decode(in []byte) ([]byte, error) {
 	return ImageToData(img)
 }
 
+func (*Gif) Mime() string {
+	return "image/gif"
+}
+
+func (*Gif) Type() string {
+	return ".gif"
+}
+
 func NewGif(option encodercommon.EncoderOption) *Gif {
 	return &Gif{
 		EncoderOption: option,

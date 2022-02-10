@@ -1,10 +1,8 @@
 package weibo
 
 import (
-	"math"
-
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
-	encoderimage "github.com/foxxorcat/DriverCore/encoder/image"
+	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 )
 
 func (b *WeiBo) SetOption(options ...drivercommon.Option) error {
@@ -12,10 +10,7 @@ func (b *WeiBo) SetOption(options ...drivercommon.Option) error {
 		return err
 	}
 
-	switch e := b.option.Encoder.(type) {
-	case *encoderimage.Gif:
-		e.MinSize = int(math.Max(float64(e.MinSize), 10))
-	}
+	b.option.Encoder.SetOption(encodercommon.WithMinSize(-10))
 	b.client.SetTimeout(b.option.Timeout)
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func (bjh *BaiJiaHao) formatUrl(metaurl string) string {
-	return fmt.Sprintf("https://pic.rmb.bdstatic.com/bjh/%s.%s", metaurl, bjh.suffix)
+	return fmt.Sprintf("https://pic.rmb.bdstatic.com/bjh/%s%s", metaurl, bjh.option.Encoder.Type())
 }
 
 func (bjh *BaiJiaHao) Name() string {

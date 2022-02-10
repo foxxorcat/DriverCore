@@ -30,8 +30,8 @@ func (b *WeiBo) Upload(ctx context.Context, block []byte) (metaurl string, err e
 			"b64_data": base64.StdEncoding.EncodeToString(block),
 		}).
 		SetQuery(gout.H{
-			"ori": "1",
-			//"mime": tools.GetContentType(block),
+			"ori":  "1",
+			"mime": b.option.Encoder.Mime(),
 			"data": "base64",
 		}).
 		Filter().Retry().

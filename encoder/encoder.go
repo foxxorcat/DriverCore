@@ -22,46 +22,44 @@ var EncoderList = []string{
 	encoderimage.PNGGRAY,
 }
 
-func NewEncoder(name string, option encodercommon.EncoderOption) (encodercommon.EncoderPlugin, error) {
-	switch name {
+func NewEncoder(name string, option ...encodercommon.Option) (encodercommon.EncoderPlugin, error) {
+	var param encodercommon.EncoderOption
+	if err := param.SetOption(option...); err != nil {
+		return nil, err
+	}
 
+	switch name {
 	//bmp
 	case encoderimage.BMPRGB:
-		option.Mode = encodercommon.RGB
+		param.Mode = encodercommon.RGB
 		goto BMP
 	case encoderimage.BMPRGBA:
-		option.Mode = encodercommon.RGBA
+		param.Mode = encodercommon.RGBA
 		goto BMP
 	case encoderimage.BMPPALETTED:
-		option.Mode = encodercommon.Paletted
+		param.Mode = encodercommon.Paletted
 		goto BMP
 	case encoderimage.BMPGRAY:
-		option.Mode = encodercommon.Gray
-		goto BMP
-	case encoderimage.BMP:
+		param.Mode = encodercommon.Gray
 		goto BMP
 
 		// gif
 	case encoderimage.GIFPALETTED:
-		option.Mode = encodercommon.Paletted
-		goto GIF
-	case encoderimage.GIF:
+		param.Mode = encodercommon.Paletted
 		goto GIF
 
 		//png
 	case encoderimage.PNGRGB:
-		option.Mode = encodercommon.RGB
+		param.Mode = encodercommon.RGB
 		goto PNG
 	case encoderimage.PNGRGBA:
-		option.Mode = encodercommon.RGBA
+		param.Mode = encodercommon.RGBA
 		goto PNG
 	case encoderimage.PNGPALETTED:
-		option.Mode = encodercommon.Paletted
+		param.Mode = encodercommon.Paletted
 		goto PNG
 	case encoderimage.PNGGRAY:
-		option.Mode = encodercommon.Gray
-		goto PNG
-	case encoderimage.PNG:
+		param.Mode = encodercommon.Gray
 		goto PNG
 	default:
 		return nil, encodercommon.ErrNotFindEncoder
@@ -69,12 +67,12 @@ func NewEncoder(name string, option encodercommon.EncoderOption) (encodercommon.
 
 PNG:
 
-	return encoderimage.NewPng(option), nil
+	return encoderimage.NewPng(param), nil
 
 GIF:
-	return encoderimage.NewGif(option), nil
+	return encoderimage.NewGif(param), nil
 
 BMP:
-	return encoderimage.NewBmp(option), nil
+	return encoderimage.NewBmp(param), nil
 
 }

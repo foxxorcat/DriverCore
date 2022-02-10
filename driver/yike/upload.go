@@ -46,7 +46,7 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 		ContentMd5: tools.Md5Hex(block[:int(math.Min(float64(len(block)), 256*1024))]),
 		BlockMd5:   md5,
 		SliceList:  sliceList.String(),
-		Path:       fmt.Sprintf("/%s.%s", md5, b.suffix),
+		Path:       fmt.Sprint("/", md5, b.option.Encoder.Type()),
 	}
 
 	// 判断文件状态
@@ -130,7 +130,7 @@ func (b *YiKe) Upload(ctx context.Context, block []byte) (metaurl string, err er
 		fallthrough
 	case 3:
 		// 返回metaurl
-		metaurl = fmt.Sprintf("%s#%s#%s#%s.%s", param.BlockMd5, param.ContentMd5, param.Size, param.BlockMd5, b.suffix)
+		metaurl = fmt.Sprintf("%s#%s#%s", param.BlockMd5, param.ContentMd5, param.Size)
 		return
 	default:
 		err = drivercommon.ErrApiFailure

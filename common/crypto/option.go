@@ -1,7 +1,5 @@
 package cryptocommon
 
-import "github.com/foxxorcat/DriverCore/tools"
-
 type CryptoOption struct {
 	K1     []byte // 密码、密钥
 	K2     []byte // 偏移、随机数、私钥密码
@@ -20,4 +18,4 @@ const (
 )
 
 // 默认盐值
-var Salt = tools.Str2bytes("3.1415926")
+var Salt []byte

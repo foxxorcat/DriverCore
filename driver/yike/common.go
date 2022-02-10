@@ -110,9 +110,15 @@ func (b *YiKe) CheckUrl(ctx context.Context, metaurl string) bool {
 }
 
 func (b *YiKe) formatUrl(metaurl string) (param Param) {
-	info := strings.Split(metaurl, "#")
-	if len(info) == 4 {
-		param.Path = fmt.Sprintf("/%s", info[3])
+	info := strings.SplitN(metaurl, "#", 4)
+	switch len(info) {
+	case 4:
+		param.Path = fmt.Sprint("/", info[3])
+		fallthrough
+	case 3:
+		if param.Path == "" {
+			param.Path = fmt.Sprint("/", param.BlockMd5, b.option.Encoder.Type())
+		}
 		param.Size = info[2]
 		param.BlockMd5 = info[0]
 		param.ContentMd5 = info[1]

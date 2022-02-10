@@ -2,6 +2,7 @@ package bilibili
 
 import (
 	"context"
+	"fmt"
 
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
 	"github.com/foxxorcat/DriverCore/tools"
@@ -34,7 +35,7 @@ func (b *BiLiBiLi) Upload(ctx context.Context, block []byte) (sha1 string, err e
 			SetForm(gout.H{
 				"biz":      "draw",
 				"category": "daily",
-				"file_up":  gout.FormMem(block),
+				"file_up":  gout.FormType{File: gout.FormMem(block), FileName: fmt.Sprint(sha1, b.option.Encoder.Type()), ContentType: b.option.Encoder.Mime()},
 			}).
 			Filter().Retry().
 			Func(func(c *dataflow.Context) error {

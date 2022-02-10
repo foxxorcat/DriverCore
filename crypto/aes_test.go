@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"hash/crc32"
 	"testing"
 
 	cryptocommon "github.com/foxxorcat/DriverCore/common/crypto"
@@ -36,7 +37,7 @@ func TestAes(t *testing.T) {
 			for i := 0; i < 20; i++ {
 				rawdata := tools.RandomBytes(tools.RangeRand(1024*1024, 1024*1024*4))
 				newdata := aes.Decrypt(aes.Encrypt(rawdata))
-				if tools.XXHash64Hex(rawdata) != tools.XXHash64Hex(newdata) {
+				if crc32.ChecksumIEEE(rawdata) != crc32.ChecksumIEEE(newdata) {
 					t.Errorf("块长度%d,参数%+v,错误信息%s", len(rawdata), param, "hash 验证失败")
 				}
 			}

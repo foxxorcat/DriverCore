@@ -11,7 +11,7 @@ import (
 
 // 格式化链接
 func (b *BiLiBiLi) formatUrl(metaurl string) string {
-	return fmt.Sprintf("http://i%d.hdslb.com/bfs/album/%s.%s", tools.RangeRand(0, 4), metaurl, b.suffix)
+	return fmt.Sprintf("http://i%d.hdslb.com/bfs/album/%s%s", tools.RangeRand(0, 4), metaurl, b.option.Encoder.Type())
 }
 
 func (b *BiLiBiLi) Name() string {

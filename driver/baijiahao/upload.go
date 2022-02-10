@@ -2,6 +2,7 @@ package baijiahao
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	drivercommon "github.com/foxxorcat/DriverCore/common/driver"
@@ -33,7 +34,7 @@ func (bjh *BaiJiaHao) Upload(ctx context.Context, block []byte) (md5 string, err
 				"no_compress": "1",
 				"id":          "WU_FILE_0",
 				"is_avatar":   "0",
-				"media":       gout.FormMem(block),
+				"media":       gout.FormType{File: gout.FormMem(block), FileName: fmt.Sprint(md5, bjh.option.Encoder.Type()), ContentType: bjh.option.Encoder.Mime()},
 			}).
 			Filter().Retry().
 			Func(func(c *dataflow.Context) error {
