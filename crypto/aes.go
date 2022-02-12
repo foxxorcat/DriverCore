@@ -1,9 +1,11 @@
 package crypto
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha1"
+	"io"
 
 	cryptocommon "github.com/foxxorcat/DriverCore/common/crypto"
 	"github.com/foxxorcat/DriverCore/tools"
@@ -18,64 +20,97 @@ type Aes struct {
 	iv    []byte
 }
 
-func (a *Aes) Encrypt(in []byte) []byte {
-	var cip interface{}
+func (a *Aes) EncryptReader(r io.Reader) io.Reader {
+	var crypto interface{}
 	switch a.Mode {
 	case cryptocommon.CBC:
-		in = tools.PKCS7Padding(in, a.block.BlockSize())
-		cip = cipher.NewCBCEncrypter(a.block, a.iv)
+		crypto = cipher.NewCBCEncrypter(a.block, a.iv)
 	case cryptocommon.ECB:
-		in = tools.PKCS7Padding(in, a.block.BlockSize())
-		cip = tools.NewECBEncrypter(a.block)
+		crypto = tools.NewECBEncrypter(a.block)
 	case cryptocommon.CFB:
-		cip = cipher.NewCFBEncrypter(a.block, a.iv)
+		crypto = cipher.NewCFBEncrypter(a.block, a.iv)
 	case cryptocommon.CTR:
-		cip = cipher.NewCTR(a.block, a.iv)
+		crypto = cipher.NewCTR(a.block, a.iv)
 	case cryptocommon.OFB:
-		cip = cipher.NewOFB(a.block, a.iv)
+		crypto = cipher.NewOFB(a.block, a.iv)
 	default:
 		return nil
 	}
-	out := make([]byte, len(in))
-	switch cip := cip.(type) {
-	case cipher.Stream:
-		cip.XORKeyStream(out, in)
+
+	switch v := crypto.(type) {
 	case cipher.BlockMode:
-		cip.CryptBlocks(out, in)
+		return &cryptoBlockEncrypt{
+			cryptoReader: cryptoReader{
+				crypto: v.CryptBlocks,
+				reader: r,
+			},
+			blockSize: v.BlockSize(),
+		}
+	case cipher.Stream:
+		return &cryptoStream{
+			cryptoReader: cryptoReader{
+				crypto: v.XORKeyStream,
+				reader: r,
+			},
+			bufSize: a.block.BlockSize(),
+		}
+	}
+	return nil
+}
+
+func (a *Aes) DecryptReader(r io.Reader) io.Reader {
+	var crypto interface{}
+	switch a.Mode {
+	case cryptocommon.CBC:
+		crypto = cipher.NewCBCDecrypter(a.block, a.iv)
+	case cryptocommon.ECB:
+		crypto = tools.NewECBDecrypter(a.block)
+	case cryptocommon.CFB:
+		crypto = cipher.NewCFBDecrypter(a.block, a.iv)
+	case cryptocommon.CTR:
+		crypto = cipher.NewCTR(a.block, a.iv)
+	case cryptocommon.OFB:
+		crypto = cipher.NewOFB(a.block, a.iv)
+	default:
+		return nil
 	}
 
-	return out
+	switch v := crypto.(type) {
+	case cipher.BlockMode:
+		return &cryptoBlockDecrypt{
+			cryptoReader: cryptoReader{
+				crypto: v.CryptBlocks,
+				reader: r,
+			},
+			blockSize: v.BlockSize(),
+		}
+	case cipher.Stream:
+		return &cryptoStream{
+			cryptoReader: cryptoReader{
+				crypto: v.XORKeyStream,
+				reader: r,
+			},
+			bufSize: a.block.BlockSize(),
+		}
+	}
+	return nil
+}
+
+func (a *Aes) Encrypt(in []byte) []byte {
+	reader := a.EncryptReader(bytes.NewReader(in))
+	out := make([]byte, len(in)+(a.block.BlockSize()-len(in)%a.block.BlockSize()))
+	n, _ := io.ReadFull(reader, out)
+	return out[:n]
 }
 
 func (a *Aes) Decrypt(in []byte) []byte {
-	var cip interface{}
+	reader := a.DecryptReader(bytes.NewReader(in))
 	out := make([]byte, len(in))
-	switch a.Mode {
-	case cryptocommon.CBC:
-		cip = cipher.NewCBCDecrypter(a.block, a.iv)
-	case cryptocommon.ECB:
-		cip = tools.NewECBDecrypter(a.block)
-	case cryptocommon.CFB:
-		cip = cipher.NewCFBDecrypter(a.block, a.iv)
-	case cryptocommon.CTR:
-		cip = cipher.NewCTR(a.block, a.iv)
-	case cryptocommon.OFB:
-		cip = cipher.NewOFB(a.block, a.iv)
-	default:
-		return nil
-	}
-
-	switch cip := cip.(type) {
-	case cipher.Stream:
-		cip.XORKeyStream(out, in)
-		return out
-	case cipher.BlockMode:
-		cip.CryptBlocks(out, in)
-	}
-	return tools.PKCS7UnPadding(out)
+	n, _ := io.ReadFull(reader, out)
+	return out[:n]
 }
 
-func NewAes(option cryptocommon.CryptoOption) (*Aes, error) {
+func NewAes(option cryptocommon.CryptoOption) (cryptocommon.CryptoPlugin, error) {
 	switch option.Length {
 	case 16, 24, 32:
 	default:
@@ -83,7 +118,7 @@ func NewAes(option cryptocommon.CryptoOption) (*Aes, error) {
 	}
 
 	switch option.Mode {
-	case cryptocommon.CFB, cryptocommon.CTR, cryptocommon.OFB, cryptocommon.ECB, cryptocommon.CBC:
+	case cryptocommon.CFB, cryptocommon.CTR, cryptocommon.OFB, cryptocommon.CBC, cryptocommon.ECB:
 	default:
 		return nil, cryptocommon.ErrOption
 	}

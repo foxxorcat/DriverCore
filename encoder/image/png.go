@@ -16,17 +16,20 @@ const (
 )
 
 type Png struct {
-	encodercommon.EncoderOption
+	EncoderImageOption
+	size int
 }
 
 // 编码
 func (p *Png) Encode(in []byte) ([]byte, error) {
-	img, err := DataToImage(in, p.EncoderOption)
+	img, err := DataToImage(in, p.EncoderImageOption)
 	if err != nil {
 		return nil, err
 	}
 	w := new(bytes.Buffer)
+	w.Grow(p.size)
 	(&png.Encoder{CompressionLevel: png.NoCompression}).Encode(w, img)
+	p.size = w.Cap()
 	return w.Bytes(), nil
 }
 
@@ -48,8 +51,11 @@ func (*Png) Type() string {
 	return ".png"
 }
 
-func NewPng(option encodercommon.EncoderOption) *Png {
-	return &Png{
-		EncoderOption: option,
+func NewPng(mode EncoderMode, option encodercommon.EncoderOption) (encodercommon.EncoderPlugin, error) {
+	switch mode {
+	case RGB, RGBA, Gray, Paletted:
+		return &Png{EncoderImageOption: EncoderImageOption{EncoderOption: option, Mode: mode}}, nil
+	default:
+		return nil, encodercommon.ErrNotSuperImageMod
 	}
 }

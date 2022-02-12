@@ -5,8 +5,6 @@ import "math"
 type EncoderOption struct {
 	//MaxSize uint
 	MinSize int
-
-	Mode EncoderMode
 }
 
 func (b *EncoderOption) SetOption(options ...Option) error {
@@ -37,14 +35,3 @@ func (t minsize) Apply(o *EncoderOption) error {
 	o.MinSize = int(t)
 	return nil
 }
-
-type EncoderMode uint8
-
-// 图片模式
-const (
-	RGB      EncoderMode = iota //24位
-	RGBA                        //32位
-	Paletted                    //8位
-	Gray                        //灰度图
-	CUSTOM1
-)

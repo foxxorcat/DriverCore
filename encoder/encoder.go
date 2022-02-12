@@ -1,78 +1,49 @@
 package encoder
 
 import (
+	"fmt"
+	"sort"
+
 	encodercommon "github.com/foxxorcat/DriverCore/common/encoder"
 	encoderimage "github.com/foxxorcat/DriverCore/encoder/image"
 )
 
-var EncoderList = []string{
-	//encoderimage.BMP,
-	encoderimage.BMPRGB,
-	encoderimage.BMPRGBA,
-	encoderimage.BMPPALETTED,
-	encoderimage.BMPGRAY,
+type NewEnocerFunc func(options ...encodercommon.Option) (encodercommon.EncoderPlugin, error)
 
-	//encoderimage.GIF,
-	encoderimage.GIFPALETTED,
+var encoderNameMapNew = map[string]NewEnocerFunc{
+	encoderimage.BMPRGB:      encoderimage.WithEncoderNewFunc(encoderimage.RGB, encoderimage.NewBmp),
+	encoderimage.BMPRGBA:     encoderimage.WithEncoderNewFunc(encoderimage.RGBA, encoderimage.NewBmp),
+	encoderimage.BMPGRAY:     encoderimage.WithEncoderNewFunc(encoderimage.Gray, encoderimage.NewBmp),
+	encoderimage.BMPPALETTED: encoderimage.WithEncoderNewFunc(encoderimage.Paletted, encoderimage.NewBmp),
 
-	//encoderimage.PNG,
-	encoderimage.PNGRGB,
-	encoderimage.PNGRGBA,
-	encoderimage.PNGPALETTED,
-	encoderimage.PNGGRAY,
+	encoderimage.PNGRGB:      encoderimage.WithEncoderNewFunc(encoderimage.RGB, encoderimage.NewPng),
+	encoderimage.PNGRGBA:     encoderimage.WithEncoderNewFunc(encoderimage.RGBA, encoderimage.NewPng),
+	encoderimage.PNGGRAY:     encoderimage.WithEncoderNewFunc(encoderimage.Gray, encoderimage.NewPng),
+	encoderimage.PNGPALETTED: encoderimage.WithEncoderNewFunc(encoderimage.Paletted, encoderimage.NewPng),
+
+	encoderimage.GIFPALETTED: encoderimage.WithEncoderNewFunc(encoderimage.Paletted, encoderimage.NewGif),
 }
 
-func NewEncoder(name string, option ...encodercommon.Option) (encodercommon.EncoderPlugin, error) {
-	var param encodercommon.EncoderOption
-	if err := param.SetOption(option...); err != nil {
-		return nil, err
+func AddEncoder(name string, new NewEnocerFunc) error {
+	if name == "" || new == nil {
+		return fmt.Errorf("参数错误")
 	}
+	encoderNameMapNew[name] = new
+	return nil
+}
 
-	switch name {
-	//bmp
-	case encoderimage.BMPRGB:
-		param.Mode = encodercommon.RGB
-		goto BMP
-	case encoderimage.BMPRGBA:
-		param.Mode = encodercommon.RGBA
-		goto BMP
-	case encoderimage.BMPPALETTED:
-		param.Mode = encodercommon.Paletted
-		goto BMP
-	case encoderimage.BMPGRAY:
-		param.Mode = encodercommon.Gray
-		goto BMP
-
-		// gif
-	case encoderimage.GIFPALETTED:
-		param.Mode = encodercommon.Paletted
-		goto GIF
-
-		//png
-	case encoderimage.PNGRGB:
-		param.Mode = encodercommon.RGB
-		goto PNG
-	case encoderimage.PNGRGBA:
-		param.Mode = encodercommon.RGBA
-		goto PNG
-	case encoderimage.PNGPALETTED:
-		param.Mode = encodercommon.Paletted
-		goto PNG
-	case encoderimage.PNGGRAY:
-		param.Mode = encodercommon.Gray
-		goto PNG
-	default:
-		return nil, encodercommon.ErrNotFindEncoder
+func GetEncoders() []string {
+	list := make([]string, 0, len(encoderNameMapNew))
+	for name := range encoderNameMapNew {
+		list = append(list, name)
 	}
+	sort.Strings(list)
+	return list
+}
 
-PNG:
-
-	return encoderimage.NewPng(param), nil
-
-GIF:
-	return encoderimage.NewGif(param), nil
-
-BMP:
-	return encoderimage.NewBmp(param), nil
-
+func NewEncoder(name string, options ...encodercommon.Option) (encodercommon.EncoderPlugin, error) {
+	if new, ok := encoderNameMapNew[name]; ok {
+		return new(options...)
+	}
+	return nil, encodercommon.ErrNotSuperEncoded
 }

@@ -13,21 +13,20 @@ const (
 )
 
 type Gif struct {
-	encodercommon.EncoderOption
+	EncoderImageOption
+	size int
 }
 
 func (f *Gif) Encode(in []byte) ([]byte, error) {
-	if f.Mode != encodercommon.Paletted {
-		return nil, encodercommon.ErrNotSuperImageMod
-	}
-
-	img, err := DataToImage(in, f.EncoderOption)
+	img, err := DataToImage(in, f.EncoderImageOption)
 	if err != nil {
 		return nil, err
 	}
 
 	w := new(bytes.Buffer)
+	w.Grow(f.size)
 	gif.Encode(w, img, nil)
+	f.size = w.Cap()
 	return w.Bytes(), nil
 }
 
@@ -48,8 +47,11 @@ func (*Gif) Type() string {
 	return ".gif"
 }
 
-func NewGif(option encodercommon.EncoderOption) *Gif {
-	return &Gif{
-		EncoderOption: option,
+func NewGif(mode EncoderMode, option encodercommon.EncoderOption) (encodercommon.EncoderPlugin, error) {
+	switch mode {
+	case Paletted:
+		return &Png{EncoderImageOption: EncoderImageOption{EncoderOption: option, Mode: mode}}, nil
+	default:
+		return nil, encodercommon.ErrNotSuperImageMod
 	}
 }

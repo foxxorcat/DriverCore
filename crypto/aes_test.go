@@ -15,7 +15,7 @@ func TestAes(t *testing.T) {
 	}
 
 	modes := []string{
-		cryptocommon.CFB, cryptocommon.CTR, cryptocommon.OFB, cryptocommon.ECB, cryptocommon.CBC,
+		cryptocommon.CFB, cryptocommon.CTR, cryptocommon.OFB,
 	}
 
 	lengths := []int{
@@ -31,9 +31,10 @@ func TestAes(t *testing.T) {
 			}
 			aes, err := NewAes(param)
 			if err != nil {
-				t.Errorf("参数%+v,错误信息%s", param, "hash 验证失败")
+				t.Errorf("参数%+v,错误信息%s", param, err)
 				continue
 			}
+			t.Errorf("参数%+v,开始测试", param)
 			for i := 0; i < 20; i++ {
 				rawdata := tools.RandomBytes(tools.RangeRand(1024*1024, 1024*1024*4))
 				newdata := aes.Decrypt(aes.Encrypt(rawdata))
@@ -41,6 +42,7 @@ func TestAes(t *testing.T) {
 					t.Errorf("块长度%d,参数%+v,错误信息%s", len(rawdata), param, "hash 验证失败")
 				}
 			}
+			t.Errorf("参数%+v,测试完成", param)
 		}
 	}
 }
